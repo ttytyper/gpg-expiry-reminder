@@ -1,0 +1,26 @@
+#!/bin/sh
+gpg --with-colons --list-keys "${@}" \
+|awk -v acceptableexpiredays="${acceptableexpirydays:-30}" -F: '
+	BEGIN {
+		expired=0
+	}
+	END {
+		exit(expired)
+	}
+	# See doc/DETAILS.gz distributed with gnupg/gnupg2 for field descriptions 
+	# $1 = type (pub = public key)
+	# $2 = validity
+	# $5 = key id
+	# $7 = expiry
+	($1 == "pub" && $2 !~ "/[idrq-]/" && $5 && $7) {
+		expiredays = ($7 - systime())/3600/24
+		if (expiredays < acceptableexpiredays)
+		{
+			if (expiredays > 0)
+				printf "Key 0x%s expires in %d days\n",$5,expiredays
+			else
+				printf "Key 0x%s expired %d days ago\n",$5,-expiredays
+			expired=1
+		}
+	}
+'
