@@ -1,5 +1,5 @@
 #!/bin/sh
-gpg --no-auto-check-trustdb --with-colons --list-keys "${@}" \
+gpg --always-trust --with-colons --list-keys "${@}" \
 |awk -v acceptableexpiredays="${acceptableexpirydays:-30}" -F: '
 	BEGIN {
 		expired=0
